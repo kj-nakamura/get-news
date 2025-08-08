@@ -7,7 +7,8 @@
   "scripts": {
     "dev": "vercel dev",
     "start": "node -e \"console.log('Use Vercel to run serverless functions')\"",
-    "lint": "echo \"No linter configured\""
+    "lint": "echo \"No linter configured\"",
+    "generate:tweet": "node scripts/generate-tweet.js"
   },
   "dependencies": {
     "rss-parser": "^3.13.0",
