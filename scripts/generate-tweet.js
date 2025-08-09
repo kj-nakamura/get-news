@@ -36,12 +36,10 @@ function formatTimestamp(date = new Date()) {
   return `${yyyy}${mm}${dd}-${hh}${min}${ss}`;
 }
 
-async function main() {
+export async function generateOpinionPost() {
   const articles = await fetchTrendingNews();
   if (!Array.isArray(articles) || articles.length === 0) {
-    console.error('No articles fetched. Aborting.');
-    process.exitCode = 1;
-    return;
+    throw new Error('No articles fetched');
   }
 
   const analyzed = articles.map(analyzeBuzzPotential);
@@ -49,16 +47,40 @@ async function main() {
 
   const tweet = await generateTweet(top);
 
-  const outDir = path.resolve(__dirname, '..', 'out');
-  await ensureDirectoryExists(outDir);
-  const outfile = path.join(outDir, `tweet-${formatTimestamp()}.txt`);
-  await fs.writeFile(outfile, `${tweet}\n`, 'utf8');
-
-  console.log(`Tweet written to: ${outfile}`);
-  process.exit(0);
+  return {
+    postText: tweet,
+    article: top,
+    metadata: {
+      buzzScore: top.buzzScore,
+      matchedKeywords: top.matchedKeywords,
+      category: top.category,
+      source: top.source,
+      title: top.title
+    }
+  };
 }
 
-main().catch((error) => {
-  console.error('Script error:', error);
-  process.exit(1);
-});
+async function main() {
+  try {
+    const result = await generateOpinionPost();
+    
+    const outDir = path.resolve(__dirname, '..', 'out');
+    await ensureDirectoryExists(outDir);
+    const outfile = path.join(outDir, `tweet-${formatTimestamp()}.txt`);
+    await fs.writeFile(outfile, `${result.postText}\n`, 'utf8');
+
+    console.log(`Tweet written to: ${outfile}`);
+    process.exit(0);
+  } catch (error) {
+    console.error('Script error:', error);
+    process.exit(1);
+  }
+}
+
+// Only run main if this file is executed directly
+if (import.meta.url === `file://${process.argv[1]}`) {
+  main().catch((error) => {
+    console.error('Script error:', error);
+    process.exit(1);
+  });
+}

@@ -1,0 +1,17 @@
+{
+  "timestamp": "2025-08-09T00:25:48.619Z",
+  "postText": "ChatGPTの新機能「Connectors」が悪用され、機密情報流出の可能性が指摘されたのは正直驚いたし、懸念が大きい。便利さとリスクは常に隣り合わせだけど、外部ストレージ連携となると流出範囲が広がりそうで心配だね。 https://www.itmedia.co.jp/enterprise/articles/2508/09/news020.html",
+  "result": {
+    "success": true,
+    "dryRun": true,
+    "postText": "ChatGPTの新機能「Connectors」が悪用され、機密情報流出の可能性が指摘されたのは正直驚いたし、懸念が大きい。便利さとリスクは常に隣り合わせだけど、外部ストレージ連携となると流出範囲が広がりそうで心配だね。 https://www.itmedia.co.jp/enterprise/articles/2508/09/news020.html",
+    "length": 176,
+    "id": "dry-run-1754699148618"
+  },
+  "metadata": {
+    "length": 176,
+    "posted": false,
+    "dryRun": true,
+    "url": null
+  }
+}

@@ -10,7 +10,9 @@
     "dev": "vercel dev",
     "start": "node -e \"console.log('Use Vercel to run serverless functions')\"",
     "lint": "echo \"No linter configured\"",
-    "generate:tweet": "node scripts/generate-tweet.js"
+    "generate": "node scripts/generate-tweet.js",
+    "post": "node scripts/post.js",
+    "post:dry": "DRY_RUN=true node scripts/post.js"
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.1",
