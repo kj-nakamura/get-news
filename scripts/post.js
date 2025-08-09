@@ -2,9 +2,11 @@
 TODOs (scripts/post.js)
 - [x] Import generate function from generate-tweet.js
 - [x] Publish to X using XPoster
+- [x] Publish to Threads using ThreadsPoster
 - [x] Save post to file for backup
 - [x] Add comprehensive error handling
 - [x] Support dry-run mode
+- [x] Support platform selection (X, Threads, or both)
 */
 
 import dotenv from 'dotenv';
@@ -14,6 +16,7 @@ import { fileURLToPath } from 'node:url';
 
 import { generateOpinionPost } from './generate-tweet.js';
 import XPoster from '../lib/x-poster.js';
+import ThreadsPoster from '../lib/threads-poster.js';
 
 // Load environment variables from .env file
 dotenv.config();
@@ -35,7 +38,7 @@ function formatTimestamp(date = new Date()) {
   return `${yyyy}${mm}${dd}-${hh}${min}${ss}`;
 }
 
-async function savePostBackup(postText, result, timestamp) {
+async function savePostBackup(postText, results, timestamp) {
   try {
     const backupDir = path.resolve(__dirname, '..', 'posts');
     await ensureDirectoryExists(backupDir);
@@ -46,12 +49,12 @@ async function savePostBackup(postText, result, timestamp) {
     const backupData = {
       timestamp: new Date().toISOString(),
       postText,
-      result,
+      results,
       metadata: {
         length: postText.length,
-        posted: result.success && !result.dryRun,
-        dryRun: result.dryRun || false,
-        url: result.url || null
+        platforms: Object.keys(results),
+        posted: Object.values(results).some(r => r.success && !r.dryRun),
+        dryRun: Object.values(results).every(r => r.dryRun || false)
       }
     };
     
@@ -72,8 +75,22 @@ async function main() {
   try {
     // Check if we should run in dry-run mode
     const dryRun = process.env.DRY_RUN === 'true' || process.argv.includes('--dry-run');
+    
+    // Check which platforms to post to
+    const platforms = [];
+    if (process.argv.includes('--x-only')) {
+      platforms.push('x');
+    } else if (process.argv.includes('--threads-only')) {
+      platforms.push('threads');
+    } else {
+      // Default: post to both platforms
+      platforms.push('x', 'threads');
+    }
+    
     if (dryRun) {
-      console.log('🔄 Running in DRY RUN mode - no posts will be published to X');
+      console.log(`🔄 Running in DRY RUN mode - no posts will be published to: ${platforms.join(', ')}`);
+    } else {
+      console.log(`📤 Will publish to platforms: ${platforms.join(', ')}`);
     }
     
     // 1. Generate opinion post using generate-tweet.js
@@ -90,50 +107,94 @@ async function main() {
     console.log(postText);
     console.log('━'.repeat(50));
     
-    // 2. Initialize X poster
-    const xPoster = new XPoster({ dryRun });
+    // 2. Initialize posters based on selected platforms
+    const posters = {};
+    const results = {};
+    
+    if (platforms.includes('x')) {
+      posters.x = new XPoster({ dryRun });
+    }
+    
+    if (platforms.includes('threads')) {
+      posters.threads = new ThreadsPoster({ dryRun });
+    }
     
     // 3. Test credentials (if not in dry-run mode)
     if (!dryRun) {
-      console.log('🔐 Testing X API credentials...');
-      const accountInfo = await xPoster.getAccountInfo();
+      for (const [platform, poster] of Object.entries(posters)) {
+        console.log(`🔐 Testing ${platform.toUpperCase()} API credentials...`);
+        
+        const accountInfo = platform === 'x' 
+          ? await poster.getAccountInfo()
+          : await poster.getUserInfo();
+        
+        if (!accountInfo.success) {
+          console.error(`❌ Failed to connect to ${platform.toUpperCase()} API:`, accountInfo.error);
+          console.log(`⚠️ Continuing with other platforms...`);
+          delete posters[platform];
+        }
+      }
       
-      if (!accountInfo.success) {
-        console.error('❌ Failed to connect to X API:', accountInfo.error);
+      if (Object.keys(posters).length === 0) {
+        console.error('❌ No valid API connections available');
         process.exit(1);
       }
     }
     
-    // 4. Publish the post
-    console.log('📤 Publishing post to X...');
-    const publishResult = await xPoster.publishPost(postText);
+    // 4. Publish the post to all platforms
+    for (const [platform, poster] of Object.entries(posters)) {
+      console.log(`📤 Publishing post to ${platform.toUpperCase()}...`);
+      const publishResult = await poster.publishPost(postText);
+      results[platform] = publishResult;
+      
+      if (publishResult.success) {
+        if (publishResult.dryRun) {
+          console.log(`✅ ${platform.toUpperCase()} DRY RUN completed successfully`);
+        } else {
+          console.log(`🎉 Post published successfully to ${platform.toUpperCase()}!`);
+          console.log(`🔗 Post URL: ${publishResult.url}`);
+        }
+      } else {
+        console.error(`❌ Failed to publish to ${platform.toUpperCase()}:`, publishResult.error);
+      }
+    }
     
-    // 5. Save backup regardless of publish result
-    const backupPath = await savePostBackup(postText, publishResult, timestamp);
+    // 5. Save backup regardless of publish results
+    const backupPath = await savePostBackup(postText, results, timestamp);
     
     // 6. Handle results
-    if (publishResult.success) {
-      if (publishResult.dryRun) {
-        console.log('✅ DRY RUN completed successfully');
-        console.log(`📁 Post content saved to backup: ${backupPath}`);
-      } else {
-        console.log('🎉 Post published successfully to X!');
-        console.log(`🔗 Post URL: ${publishResult.url}`);
-        console.log(`📁 Backup saved: ${backupPath}`);
-      }
-    } else {
-      console.error('❌ Failed to publish post:', publishResult.error);
-      console.error('📋 Details:', publishResult.details);
-      
-      if (publishResult.error === 'Rate limited') {
-        console.log('⏰ Rate limited. Try again later.');
-        if (publishResult.retryAfter) {
-          console.log(`⏰ Retry after: ${new Date(publishResult.retryAfter * 1000)}`);
+    const successfulPosts = Object.entries(results).filter(([, result]) => result.success);
+    const failedPosts = Object.entries(results).filter(([, result]) => !result.success);
+    
+    if (successfulPosts.length > 0) {
+      console.log(`✅ Successfully posted to ${successfulPosts.length}/${Object.keys(results).length} platforms:`);
+      successfulPosts.forEach(([platform, result]) => {
+        if (result.dryRun) {
+          console.log(`  - ${platform.toUpperCase()}: DRY RUN completed`);
+        } else {
+          console.log(`  - ${platform.toUpperCase()}: ${result.url}`);
         }
-      }
+      });
+      console.log(`📁 Backup saved: ${backupPath}`);
+    }
+    
+    if (failedPosts.length > 0) {
+      console.error(`❌ Failed to post to ${failedPosts.length}/${Object.keys(results).length} platforms:`);
+      failedPosts.forEach(([platform, result]) => {
+        console.error(`  - ${platform.toUpperCase()}: ${result.error} - ${result.details}`);
+        
+        if (result.error === 'Rate limited') {
+          console.log(`    ⏰ Rate limited on ${platform.toUpperCase()}. Try again later.`);
+          if (result.retryAfter) {
+            console.log(`    ⏰ Retry after: ${new Date(result.retryAfter * 1000)}`);
+          }
+        }
+      });
       
-      console.log(`📁 Post content saved to backup: ${backupPath}`);
-      process.exit(1);
+      if (successfulPosts.length === 0) {
+        console.log(`📁 Post content saved to backup: ${backupPath}`);
+        process.exit(1);
+      }
     }
     
   } catch (error) {

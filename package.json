@@ -12,7 +12,11 @@
     "lint": "echo \"No linter configured\"",
     "generate": "node scripts/generate-tweet.js",
     "post": "node scripts/post.js",
-    "post:dry": "DRY_RUN=true node scripts/post.js"
+    "post:dry": "DRY_RUN=true node scripts/post.js",
+    "post:x": "node scripts/post.js --x-only",
+    "post:threads": "node scripts/post.js --threads-only",
+    "post:x:dry": "DRY_RUN=true node scripts/post.js --x-only",
+    "post:threads:dry": "DRY_RUN=true node scripts/post.js --threads-only"
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.1",
