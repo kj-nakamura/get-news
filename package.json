@@ -3,7 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "engines": { "node": ">=18" },
+  "engines": {
+    "node": ">=18"
+  },
   "scripts": {
     "dev": "vercel dev",
     "start": "node -e \"console.log('Use Vercel to run serverless functions')\"",
@@ -11,6 +13,8 @@
     "generate:tweet": "node scripts/generate-tweet.js"
   },
   "dependencies": {
+    "@google/generative-ai": "^0.24.1",
+    "dotenv": "^17.2.1",
     "rss-parser": "^3.13.0",
     "twitter-api-v2": "^1.16.0"
   }
