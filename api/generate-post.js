@@ -25,16 +25,16 @@ export default async function handler(req, res) {
     const tweet = await generateTweet(topArticle);
 
     const creds = {
-      appKey: process.env.TWITTER_API_KEY,
-      appSecret: process.env.TWITTER_API_SECRET,
-      accessToken: process.env.TWITTER_ACCESS_TOKEN,
-      accessSecret: process.env.TWITTER_ACCESS_SECRET
+      appKey: process.env.X_API_KEY,
+      appSecret: process.env.X_API_SECRET,
+      accessToken: process.env.X_ACCESS_TOKEN,
+      accessSecret: process.env.X_ACCESS_SECRET
     };
 
     const hasAllCreds = Object.values(creds).every(Boolean);
 
     if (!hasAllCreds) {
-      console.warn('Missing Twitter credentials. Skipping post (dry-run).');
+      console.warn('Missing X credentials. Skipping post (dry-run).');
       res.status(200).json({ success: true, tweet, dryRun: true });
       return;
     }
