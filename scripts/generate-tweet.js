@@ -4,8 +4,10 @@ TODOs (scripts/generate-tweet.js)
 - [x] Score and pick top article
 - [x] Generate tweet text (no posting)
 - [x] Write tweet to timestamped file under out/
+- [x] Load .env file for environment variables
 */
 
+import dotenv from 'dotenv';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -13,6 +15,9 @@ import { fileURLToPath } from 'node:url';
 import { fetchTrendingNews } from '../lib/news-fetcher.js';
 import { analyzeBuzzPotential } from '../lib/buzz-analyzer.js';
 import { generateTweet } from '../lib/tweet-generator.js';
+
+// Load environment variables from .env file
+dotenv.config();
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -50,6 +55,7 @@ async function main() {
   await fs.writeFile(outfile, `${tweet}\n`, 'utf8');
 
   console.log(`Tweet written to: ${outfile}`);
+  process.exit(0);
 }
 
 main().catch((error) => {
