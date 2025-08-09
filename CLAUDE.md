@@ -325,7 +325,12 @@ export default async function handler(req, res) {
     const tweet = await generateTweet(topArticle);
     
     // 4. X投稿
-    const client = new TwitterApi(process.env.TWITTER_BEARER_TOKEN);
+    const client = new TwitterApi({
+      appKey: process.env.X_API_KEY,
+      appSecret: process.env.X_API_SECRET,
+      accessToken: process.env.X_ACCESS_TOKEN,
+      accessSecret: process.env.X_ACCESS_SECRET,
+    });
     await client.v2.tweet(tweet);
     
     res.json({ success: true, tweet });
@@ -366,8 +371,10 @@ export default async function handler(req, res) {
 
 ```javascript
 // 環境変数管理
-process.env.TWITTER_API_KEY
-process.env.TWITTER_API_SECRET  
+process.env.X_API_KEY
+process.env.X_API_SECRET
+process.env.X_ACCESS_TOKEN
+process.env.X_ACCESS_SECRET  
 process.env.GEMINI_API_KEY
 
 // レート制限対策

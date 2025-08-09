@@ -76,6 +76,7 @@ typings/
 # Next.js build output
 .next
 out/
+posts/
 
 # Nuxt.js build / generate output
 .nuxt

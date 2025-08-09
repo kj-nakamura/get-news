@@ -36,7 +36,9 @@ function formatTimestamp(date = new Date()) {
   return `${yyyy}${mm}${dd}-${hh}${min}${ss}`;
 }
 
-export async function generateOpinionPost() {
+export async function generateOpinionPost(options = {}) {
+  const { saveToFile = false } = options;
+  
   const articles = await fetchTrendingNews();
   if (!Array.isArray(articles) || articles.length === 0) {
     throw new Error('No articles fetched');
@@ -47,7 +49,7 @@ export async function generateOpinionPost() {
 
   const tweet = await generateTweet(top);
 
-  return {
+  const result = {
     postText: tweet,
     article: top,
     metadata: {
@@ -58,18 +60,23 @@ export async function generateOpinionPost() {
       title: top.title
     }
   };
-}
 
-async function main() {
-  try {
-    const result = await generateOpinionPost();
-    
+  // Only save to file if explicitly requested (for standalone generate command)
+  if (saveToFile) {
     const outDir = path.resolve(__dirname, '..', 'out');
     await ensureDirectoryExists(outDir);
     const outfile = path.join(outDir, `tweet-${formatTimestamp()}.txt`);
     await fs.writeFile(outfile, `${result.postText}\n`, 'utf8');
-
     console.log(`Tweet written to: ${outfile}`);
+  }
+
+  return result;
+}
+
+async function main() {
+  try {
+    // When running standalone, always save to file
+    const result = await generateOpinionPost({ saveToFile: true });
     process.exit(0);
   } catch (error) {
     console.error('Script error:', error);
