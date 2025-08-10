@@ -13,23 +13,30 @@ import MultiPoster from '../lib/multi-poster.js';
 
 export default async function handler(req, res) {
   try {
-    // 認証チェック
-    const secretToken = process.env.API_SECRET_TOKEN;
-    const authHeader = req.headers.authorization;
-    const queryToken = req.query.token;
-    
-    let providedToken = null;
-    if (authHeader?.startsWith('Bearer ')) {
-      providedToken = authHeader.slice(7);
-    } else if (queryToken) {
-      providedToken = queryToken;
-    }
+    // Vercel cronからの呼び出しかチェック
+    const isFromCron = req.headers['user-agent']?.includes('vercel-cron') || 
+                      req.headers['x-vercel-cron'] ||
+                      process.env.VERCEL_CRON === 'true';
 
-    // トークンが設定されている場合は認証必須
-    if (secretToken && (!providedToken || providedToken !== secretToken)) {
-      console.warn('Unauthorized API access attempt');
-      res.status(401).json({ success: false, error: 'Unauthorized. Valid token required.' });
-      return;
+    // 手動呼び出しの場合は認証チェック
+    if (!isFromCron) {
+      const secretToken = process.env.API_SECRET_TOKEN;
+      const authHeader = req.headers.authorization;
+      const queryToken = req.query.token;
+      
+      let providedToken = null;
+      if (authHeader?.startsWith('Bearer ')) {
+        providedToken = authHeader.slice(7);
+      } else if (queryToken) {
+        providedToken = queryToken;
+      }
+
+      // トークンが設定されている場合は認証必須
+      if (secretToken && (!providedToken || providedToken !== secretToken)) {
+        console.warn('Unauthorized API access attempt');
+        res.status(401).json({ success: false, error: 'Unauthorized. Valid token required.' });
+        return;
+      }
     }
 
     // 1. Fetch news once and generate single post content
@@ -50,10 +57,7 @@ export default async function handler(req, res) {
     const postText = await generateTweet(topArticle);
     console.log(`📝 Generated post: ${postText.length} characters`);
 
-    // Vercel cronからの呼び出しかチェック (手動実行の場合はdry-run)
-    const isFromCron = req.headers['user-agent']?.includes('vercel-cron') || 
-                      req.headers['x-vercel-cron'] ||
-                      process.env.VERCEL_CRON === 'true';
+    // 上でisFromCronは既にチェック済み
 
     // Check which platforms to post to based on query parameters
     const platformParam = req.query.platforms || 'both';
