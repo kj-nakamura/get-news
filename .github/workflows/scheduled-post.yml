@@ -3,7 +3,9 @@ name: Scheduled Posts
 on:
   workflow_dispatch:
   schedule:
-    - cron: '0 0 * * *'
+    - cron: '30 22 * * *' # 07:30 JST
+    - cron: '15 3 * * *'  # 12:15 JST
+    - cron: '0 12 * * *'  # 21:00 JST
 
 jobs:
   post:
