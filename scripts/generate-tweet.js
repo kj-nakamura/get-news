@@ -37,7 +37,11 @@ function formatTimestamp(date = new Date()) {
 }
 
 export async function generateOpinionPost(options = {}) {
-  const { saveToFile = false } = options;
+  const {
+    saveToFile = false,
+    outputDir = 'out',
+    filePrefix = 'tweet'
+  } = options;
   
   const articles = await fetchTrendingNews();
   if (!Array.isArray(articles) || articles.length === 0) {
@@ -63,11 +67,23 @@ export async function generateOpinionPost(options = {}) {
 
   // Only save to file if explicitly requested (for standalone generate command)
   if (saveToFile) {
-    const outDir = path.resolve(__dirname, '..', 'out');
-    await ensureDirectoryExists(outDir);
-    const outfile = path.join(outDir, `tweet-${formatTimestamp()}.txt`);
-    await fs.writeFile(outfile, `${result.postText}\n`, 'utf8');
-    console.log(`Tweet written to: ${outfile}`);
+    const targetDir = path.resolve(__dirname, '..', outputDir);
+    await ensureDirectoryExists(targetDir);
+    const timestamp = formatTimestamp();
+    const outfile = path.join(targetDir, `${filePrefix}-${timestamp}.json`);
+
+    const payload = {
+      timestamp: new Date().toISOString(),
+      postText: result.postText,
+      article: result.article,
+      metadata: result.metadata,
+      source: 'scripts/generate-tweet.js',
+      provider: 'gemini'
+    };
+
+    await fs.writeFile(outfile, JSON.stringify(payload, null, 2), 'utf8');
+    console.log(`Generated post saved: ${outfile}`);
+    result.savedFile = outfile;
   }
 
   return result;
@@ -75,8 +91,12 @@ export async function generateOpinionPost(options = {}) {
 
 async function main() {
   try {
-    // When running standalone, always save to file
-    const result = await generateOpinionPost({ saveToFile: true });
+    // When running standalone, save JSON drafts under posts/
+    const result = await generateOpinionPost({ 
+      saveToFile: true, 
+      outputDir: 'posts',
+      filePrefix: 'gemini-draft'
+    });
     process.exit(0);
   } catch (error) {
     console.error('Script error:', error);
