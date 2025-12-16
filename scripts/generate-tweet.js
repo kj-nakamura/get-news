@@ -14,7 +14,7 @@ import { fileURLToPath } from 'node:url';
 
 import { fetchTrendingNews } from '../lib/news-fetcher.js';
 import { analyzeBuzzPotential } from '../lib/buzz-analyzer.js';
-import { generateTweet } from '../lib/tweet-generator.js';
+import { generateTweet, getGeminiModelName } from '../lib/tweet-generator.js';
 
 // Load environment variables from .env file
 dotenv.config();
@@ -51,6 +51,8 @@ export async function generateOpinionPost(options = {}) {
   const analyzed = articles.map(analyzeBuzzPotential);
   const top = analyzed.sort((a, b) => b.buzzScore - a.buzzScore)[0];
 
+  const modelName = getGeminiModelName();
+  console.log(`Gemini model selected for generation: ${modelName}`);
   const tweet = await generateTweet(top);
 
   const result = {
