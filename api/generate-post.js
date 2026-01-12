@@ -6,10 +6,10 @@ TODOs (api/generate-post.js)
 - [x] Return JSON result with both platforms
 */
 
-import { fetchTrendingNews } from '../lib/news-fetcher.js';
-import { analyzeBuzzPotential } from '../lib/buzz-analyzer.js';
-import { generateTweet } from '../lib/tweet-generator.js';
-import MultiPoster from '../lib/multi-poster.js';
+import { fetchTrendingNews } from '../src/fetchers/news-fetcher.js';
+import { analyzeBuzzPotential } from '../src/analyzers/buzz-analyzer.js';
+import { generateTweet } from '../src/generators/tweet-generator.js';
+import MultiPoster from '../src/posters/multi-poster.js';
 
 export default async function handler(req, res) {
   try {

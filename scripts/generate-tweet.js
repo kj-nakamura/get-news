@@ -12,9 +12,10 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { fetchTrendingNews } from '../lib/news-fetcher.js';
-import { analyzeBuzzPotential } from '../lib/buzz-analyzer.js';
-import { generateTweet, getGeminiModelName } from '../lib/tweet-generator.js';
+import { fetchTrendingNews } from '../src/features/news/fetcher.js';
+import { analyzeBuzzPotential } from '../src/features/news/analyzer.js';
+import { generateTweet } from '../src/features/news/generator.js';
+import { getGeminiModelName } from '../src/shared/lib/gemini.js';
 
 // Load environment variables from .env file
 dotenv.config();

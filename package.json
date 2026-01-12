@@ -16,10 +16,13 @@
     "post:x": "node scripts/post.js --x-only",
     "post:threads": "node scripts/post.js --threads-only",
     "post:x:dry": "DRY_RUN=true node scripts/post.js --x-only",
-    "post:threads:dry": "DRY_RUN=true node scripts/post.js --threads-only"
+    "post:threads:dry": "DRY_RUN=true node scripts/post.js --threads-only",
+    "post:note": "node scripts/post-note.js",
+    "post:note:publish": "node scripts/post-note.js --publish"
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.1",
+    "cheerio": "^1.1.2",
     "dotenv": "^17.2.1",
     "rss-parser": "^3.13.0",
     "twitter-api-v2": "^1.16.0"

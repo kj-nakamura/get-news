@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { truncateAtSentenceEnd } from "../lib/tweet-generator.js";
+import { truncateAtSentenceEnd } from "../src/shared/utils/text-utils.js";
 
 test("上限超過時は直前の句点で切り詰める", () => {
   const text = "短い文。これは長い文で続くので途中で切りたい。さらに続く。";
