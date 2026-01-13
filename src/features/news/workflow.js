@@ -6,6 +6,7 @@ import { fetchTrendingNews } from './fetcher.js';
 import { analyzeBuzzPotential } from './analyzer.js';
 import { generateFromTweet } from './generator.js';
 import MultiPoster from '../../shared/posters/multi-poster.js';
+import SlackPoster from '../../shared/posters/slack-poster.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -51,7 +52,17 @@ export class NewsWorkflow {
     // publishPost returns { success, results, summary, ... }
     const result = await multiPoster.publishPost(postText);
 
-    // 4. Backup
+    // 4. Slack Notification
+    if (process.env.SLACK_WEBHOOK_URL) {
+      console.log('📨 Sending draft to Slack for review...');
+      const slack = new SlackPoster();
+      await slack.publishPost(postText, {
+        articleTitle: topArticle.title,
+        type: 'news'
+      });
+    }
+
+    // 5. Backup
     await this.saveBackup(postText, result, topArticle);
 
     return {

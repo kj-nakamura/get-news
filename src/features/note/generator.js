@@ -14,11 +14,11 @@ ${title}
 ・単なる記事紹介ではなく、あなたの思考として発信してください。
 ・「〜という記事を読みました」という前置きは不要です。いきなり本題に入ってください。
 ・断定的な口調（〜だ、〜である）または独白調で。
-・日本語全角120文字以内。
+・日本語全角220〜240文字以内。
 ・ハッシュタグ、絵文字は禁止。
 
 文体イメージ:
-「タイトルにある〇〇という視点は盲点だった。確かに、〜という状況では逆に〜なのかもしれない。」
+「タイトルにある〇〇という視点は盲点だった。確かに、〜という状況では逆に〜なのかもしれない。これまでは〜と考えていたが、実は〜という可能性もあるのではないか。そう考えると、私たちの日常における選択肢はもっと多様であるべきだ。」
 `;
 
   const aiText = await callGeminiAPI(prompt);
@@ -26,7 +26,7 @@ ${title}
   
   let tweetText = aiText || title; // Fallback to title if generation fails
 
-  const MAX_TEXT_LENGTH = 120;
+  const MAX_TEXT_LENGTH = 240;
   if (tweetText.length > MAX_TEXT_LENGTH) {
     tweetText = truncateAtSentenceEnd(tweetText, MAX_TEXT_LENGTH);
   }

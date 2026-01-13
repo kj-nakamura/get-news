@@ -47,7 +47,7 @@ export async function generateTweet() {
 ・マウントに見える表現は禁止
 
 作成指示:
-・文字数は120〜150文字
+・文字数は220〜240文字
 ・抽象論だけで終わらせない
 ・数字を1つ以上入れる
 ・体験、観察、聞いた話ベースで書く
@@ -73,7 +73,7 @@ export async function generateTweet() {
     console.log("✓ Using Gemini-generated opinion tweet");
   }
 
-  const MAX_TEXT_LENGTH = 120;
+  const MAX_TEXT_LENGTH = 240;
   if (tweetText && tweetText.length > MAX_TEXT_LENGTH) {
     tweetText = truncateAtSentenceEnd(tweetText, MAX_TEXT_LENGTH);
   }
@@ -94,24 +94,23 @@ export async function generateFromTweet(article) {
 キーワード: ${matchedKeywords.join(", ")}
 
 【ツイート作成指示】
-・1文構成で、文頭に記事の要点（出来事や変化の本質）を噛み砕いて述べる
-・同じ文の後半で、その要点に対する自分の意見や感情を率直に書き、要点と意見を密接に結び付ける
+・記事の要点（出来事や変化の本質）を噛み砕いて述べ、それに対する自分の意見や感情を率直に書く
 ・リンクがなくても読者が記事内容を想像できるよう、数字や事実は一般化して簡潔に触れる
 ・記事タイトルや媒体名など出典が特定される固有名詞は避ける
 ・第三者視点や曖昧な推測は避け、自分の視点で明確な立場を示す
 ・過激すぎず、冷静だが芯のある主張にする（むやみに「断言する」と書かない）
 ・ハッシュタグと絵文字は禁止
-・日本語全角で120文字以内
+・日本語全角で240文字以内
 
 文体イメージ：
-「○○社が□□を公開したが、現場の課題を無視したこの速度感ではユーザー信頼を削るだけだ。」
+「○○社が□□を公開したが、現場の課題を無視したこの速度感ではユーザー信頼を削るだけだ。技術の進歩は歓迎すべきだが、それによって失われる人間性や倫理性についても、私たちはもっと深く議論すべき時期に来ているのではないだろうか。」
 `;
 
   const aiText = await callGeminiAPI(prompt);
   console.log(`Gemini API response: "${aiText}"`);
   let tweetText = aiText || generateFallbackTweet(article);
 
-  const MAX_TEXT_LENGTH = 120;
+  const MAX_TEXT_LENGTH = 240;
   if (tweetText.length > MAX_TEXT_LENGTH) {
     tweetText = truncateAtSentenceEnd(tweetText, MAX_TEXT_LENGTH);
   }
@@ -120,7 +119,7 @@ export async function generateFromTweet(article) {
 }
 
 function generateFallbackTweet({ title = "", contentSnippet = "" }) {
-  const MAX_LENGTH = 120;
+  const MAX_LENGTH = 240;
   const content = contentSnippet || title;
   return truncateAtSentenceEnd(content, MAX_LENGTH);
 }

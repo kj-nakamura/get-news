@@ -1,7 +1,7 @@
-// 文章の途中で切れないよう、適切な位置で切り詰める（句点は最大2つまで）
+// 文章の途中で切れないよう、適切な位置で切り詰める（句点は最大4つまで）
 export function truncateAtSentenceEnd(text, maxLength) {
-  // まず句点数を2つ以下に制限
-  const limitedText = limitSentenceCount(text, 2);
+  // 文字数に応じて句点数を制限（240文字なら4つ程度）
+  const limitedText = limitSentenceCount(text, 4);
 
   if (limitedText.length <= maxLength) return limitedText;
 

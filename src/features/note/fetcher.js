@@ -30,9 +30,9 @@ export async function fetchNoteArticleTitles(targetUrl) {
 
     console.log(`🔍 Target Creator ID: ${creatorId}`);
 
-    // Randomize page to pick older articles sometimes (1 to 5)
+    // Randomize page to pick older articles sometimes (1 to 30)
     // If we pick a page with no content, we'll fallback to page 1
-    let page = Math.floor(Math.random() * 5) + 1;
+    let page = Math.floor(Math.random() * 30) + 1;
     let titles = await fetchTitlesFromApi(creatorId, page);
 
     // Retry with page 1 if random page yielded no results
