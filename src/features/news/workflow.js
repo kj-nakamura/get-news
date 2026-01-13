@@ -4,8 +4,6 @@ import { fileURLToPath } from 'node:url';
 
 import { fetchTrendingNews } from './fetcher.js';
 import { analyzeBuzzPotential } from './analyzer.js';
-import { generateFromTweet } from './generator.js';
-import MultiPoster from '../../shared/posters/multi-poster.js';
 import SlackPoster from '../../shared/posters/slack-poster.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -33,37 +31,32 @@ export class NewsWorkflow {
     console.log(`🎯 Selected article: "${topArticle.title}" (buzz score: ${topArticle.buzzScore})`);
     console.log(`📊 Matched keywords: ${topArticle.matchedKeywords?.join(', ') || 'none'}`);
 
-    // 2. Generate
-    console.log('✍️ Generating post content...');
-    const postText = await generateFromTweet(topArticle);
+    // 2. Skip Generation & Post
+    // Requirement update: Stop Gemini gen & X post for News. Only Slack notification.
+    const postText = `📰 *News Pick Up*\n${topArticle.title}\n${topArticle.link}`;
     
-    console.log('✅ Post generated successfully:');
-    console.log('━'.repeat(50));
+    console.log('✅ News selected (No AI generation).');
     console.log(postText);
-    console.log('━'.repeat(50));
 
-    // 3. Post
-    console.log(`🚀 Initializing multi-poster for: ${this.platforms.join(', ')}`);
-    const multiPoster = new MultiPoster({
-      platforms: this.platforms,
-      dryRun: this.dryRun
-    });
-
-    // publishPost returns { success, results, summary, ... }
-    const result = await multiPoster.publishPost(postText);
-
-    // 4. Slack Notification
+    // 3. Slack Notification Only
     if (process.env.SLACK_WEBHOOK_URL) {
-      console.log('📨 Sending draft to Slack for review...');
+      console.log('📨 Sending news link to Slack...');
       const slack = new SlackPoster();
+      // We pass the raw text directly
       await slack.publishPost(postText, {
-        articleTitle: topArticle.title,
         type: 'news'
       });
     }
 
-    // 5. Backup
-    await this.saveBackup(postText, result, topArticle);
+    return {
+      postText,
+      article: topArticle,
+      result: { success: true, note: 'Slack notification only' }
+    };
+  }
+
+  // Backup is optional if we are just notifying Slack, but kept for logging if needed
+  async saveBackup(postText, result, article) {
 
     return {
       postText,
