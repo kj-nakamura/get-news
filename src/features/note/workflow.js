@@ -63,6 +63,7 @@ export class NoteWorkflow {
       // 送信するのはAIが生成した文章のみとする
       await slack.publishPost(postText, {
         articleTitle: latestArticle.title,
+        url: latestArticle.url,
         type: 'note'
       });
     }

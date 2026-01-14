@@ -16,8 +16,14 @@ export default class SlackPoster {
     }
 
     try {
+      let text = postText;
+      if (metadata && metadata.url) {
+        const title = metadata.articleTitle || 'Reference URL';
+        text += `\n\n📄 *Reference:*\n<${metadata.url}|${title}>`;
+      }
+
       const payload = {
-        text: postText
+        text: text
       };
 
       const response = await fetch(this.webhookUrl, {
