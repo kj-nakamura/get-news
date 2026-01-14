@@ -66,6 +66,8 @@ export class NoteWorkflow {
         url: latestArticle.url,
         type: 'note'
       });
+    } else {
+      console.log('ℹ️ Skipping Slack notification (SLACK_WEBHOOK_URL not set)');
     }
 
     // 5. Backup
