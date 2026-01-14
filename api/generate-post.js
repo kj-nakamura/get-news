@@ -6,10 +6,10 @@ TODOs (api/generate-post.js)
 - [x] Return JSON result with both platforms
 */
 
-import { fetchTrendingNews } from '../src/fetchers/news-fetcher.js';
-import { analyzeBuzzPotential } from '../src/analyzers/buzz-analyzer.js';
-import { generateTweet } from '../src/generators/tweet-generator.js';
-import MultiPoster from '../src/posters/multi-poster.js';
+import { fetchTrendingNews } from '../src/features/news/fetcher.js';
+import { analyzeBuzzPotential } from '../src/features/news/analyzer.js';
+import { generateFromTweet } from '../src/features/news/generator.js';
+import MultiPoster from '../src/shared/posters/multi-poster.js';
 
 export default async function handler(req, res) {
   try {
@@ -54,7 +54,7 @@ export default async function handler(req, res) {
     
     // 2. Generate post content once (will be used for both X and Threads)
     console.log('✍️ Generating post content...');
-    const postText = await generateTweet(topArticle);
+    const postText = await generateFromTweet(topArticle);
     console.log(`📝 Generated post: ${postText.length} characters`);
 
     // 上でisFromCronは既にチェック済み

@@ -36,10 +36,12 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Post News (Twice a day)
-        if: github.event.schedule == '30 22 * * *' || github.event.schedule == '0 12 * * *' || github.event_name == 'workflow_dispatch'
+      - name: Post News
+        if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
         run: npm run post
+        continue-on-error: true
 
-      - name: Post Note Draft (Once a day)
-        if: github.event.schedule == '15 3 * * *' || github.event_name == 'workflow_dispatch'
+      - name: Post Note Draft
+        if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
         run: npm run post:note
+        continue-on-error: true

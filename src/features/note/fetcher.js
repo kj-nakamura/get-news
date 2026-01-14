@@ -33,12 +33,12 @@ export async function fetchNoteArticleTitles(targetUrl) {
     // Randomize page to pick older articles sometimes (1 to 30)
     // If we pick a page with no content, we'll fallback to page 1
     let page = Math.floor(Math.random() * 30) + 1;
-    let titles = await fetchTitlesFromApi(creatorId, page);
+    let articles = await fetchTitlesFromApi(creatorId, page);
 
     // Retry with page 1 if random page yielded no results
-    if (titles.length === 0 && page !== 1) {
+    if (articles.length === 0 && page !== 1) {
       console.log(`⚠️ Page ${page} was empty. Falling back to Page 1.`);
-      titles = await fetchTitlesFromApi(creatorId, 1);
+      articles = await fetchTitlesFromApi(creatorId, 1);
     }
 
     // Additional filtering (just in case API returns non-note items, though ?kind=note helps)
@@ -50,12 +50,12 @@ export async function fetchNoteArticleTitles(targetUrl) {
         'サイトマップ'
     ];
 
-    const cleanTitles = titles.filter(t => {
-        return !ignorePatterns.some(pattern => t.includes(pattern));
+    const cleanArticles = articles.filter(article => {
+        return !ignorePatterns.some(pattern => article.title.includes(pattern));
     });
 
-    console.log(`✅ Fetched ${cleanTitles.length} titles from Page ${titles.length > 0 ? page : 1}`);
-    return cleanTitles;
+    console.log(`✅ Fetched ${cleanArticles.length} articles from Page ${articles.length > 0 ? page : 1}`);
+    return cleanArticles;
 
   } catch (error) {
     console.error(`Error fetching from note.com API: ${error.message}`);
@@ -76,5 +76,8 @@ async function fetchTitlesFromApi(creatorId, page) {
   const json = await response.json();
   const contents = json.data?.contents || [];
 
-  return contents.map(item => item.name).filter(Boolean);
+  return contents.map(item => ({
+    title: item.name,
+    url: item.noteUrl || `https://note.com/${creatorId}/n/${item.key}`
+  })).filter(item => item.title);
 }

@@ -51,7 +51,19 @@ export class NewsWorkflow {
     return {
       postText,
       article: topArticle,
-      result: { success: true, note: 'Slack notification only' }
+      result: { 
+        success: true, 
+        note: 'Slack notification only',
+        summary: {
+          total: 1,
+          successful: 1,
+          failed: 0,
+          platforms: {
+            successful: ['slack'],
+            failed: []
+          }
+        }
+      }
     };
   }
 

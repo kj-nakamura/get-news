@@ -24,19 +24,19 @@ export class NoteWorkflow {
 
     // 1. Fetch
     console.log(`Checking Note articles from: ${this.noteUrl}`);
-    const titles = await fetchNoteArticleTitles(this.noteUrl);
+    const articles = await fetchNoteArticleTitles(this.noteUrl);
     
-    if (!titles || titles.length === 0) {
-      throw new Error('No titles found or failed to fetch from Note');
+    if (!articles || articles.length === 0) {
+      throw new Error('No articles found or failed to fetch from Note');
     }
 
     // Pick the latest one (assuming the first one is the latest)
-    const latestTitle = titles[0];
-    console.log(`🎯 Selected article title: "${latestTitle}"`);
+    const latestArticle = articles[0];
+    console.log(`🎯 Selected article: "${latestArticle.title}"`);
 
     // 2. Generate
     console.log('✍️ Generating post content...');
-    const postText = await generateNoteTweet(latestTitle);
+    const postText = await generateNoteTweet(latestArticle.title);
     
     console.log('✅ Post generated successfully:');
     console.log('━'.repeat(50));
@@ -59,23 +59,25 @@ export class NoteWorkflow {
     if (process.env.SLACK_WEBHOOK_URL) {
       console.log('📨 Sending draft to Slack for review...');
       const slack = new SlackPoster();
+      
+      // 送信するのはAIが生成した文章のみとする
       await slack.publishPost(postText, {
-        articleTitle: latestTitle,
+        articleTitle: latestArticle.title,
         type: 'note'
       });
     }
 
     // 5. Backup
-    await this.saveBackup(postText, result, latestTitle);
+    await this.saveBackup(postText, result, latestArticle);
 
     return {
       postText,
-      articleTitle: latestTitle,
+      articleTitle: latestArticle.title,
       result
     };
   }
 
-  async saveBackup(postText, result, title) {
+  async saveBackup(postText, result, article) {
     try {
       const backupDir = path.resolve(__dirname, '..', '..', '..', 'posts');
       await fs.mkdir(backupDir, { recursive: true });
@@ -89,9 +91,9 @@ export class NoteWorkflow {
         type: 'note',
         postText,
         article: {
-            title: title,
+            title: article.title,
             source: 'note.com',
-            url: this.noteUrl
+            url: article.url
         },
         results: result.results,
         metadata: {
